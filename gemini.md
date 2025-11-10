@@ -74,3 +74,43 @@
     *   Styling and UI/UX adjustments.
 
 ---
+
+## Development Log (2025-11-10)
+
+**Session Summary:**
+이번 세션에서는 초기 PoC 설정을 기반으로 대대적인 기능 개선 및 안정화 작업을 진행했습니다. 주요 변경 사항은 다음과 같습니다.
+
+*   **UI & Styling:**
+    *   **Tailwind CSS Fix:** `vite.config.ts` 설정 오류로 인해 적용되지 않던 Tailwind CSS 스타일 문제를 해결했습니다. `@tailwindcss/postcss` 대신 최신 `@tailwindcss/vite` 플러그인을 도입하여 문제를 해결하고 PostCSS 관련 의존성을 정리했습니다.
+    *   **Layout Adjustment:** 사용자의 피드백에 따라, 콘텐츠 양옆의 과도한 여백을 줄이기 위해 주요 컴포넌트(`Home`, `Questionnaire`, `Results`)의 `max-width` 제약 조건을 제거하여 콘텐츠가 화면 너비에 더 잘 맞도록 조정했습니다.
+
+*   **Frontend Feature Development:**
+    *   **Questionnaire Refactor:**
+        *   사용자의 집중도를 높이기 위해, 설문지를 한 번에 하나의 질문만 표시하도록 리팩토링했습니다.
+        *   질문 간 이동을 위한 "다음" 및 "이전" 버튼을 추가했습니다.
+        *   사용자 경험 향상을 위해 전체 진행 상황을 보여주는 프로그레스 바를 구현했습니다.
+        *   질문 전환 시 부드러운 경험을 제공하기 위해 페이드인/아웃 애니메이션을 추가했습니다.
+    *   **Questionnaire UI/UX:**
+        *   모든 질문에 사용자가 직접 응답하도록, 답변의 기본 선택 값을 제거했습니다.
+        *   답변이 선택될 때까지 "다음" 및 "제출" 버튼을 비활성화하여 누락된 응답을 방지했습니다.
+        *   기존의 숫자 선택지(1-5)를 "전혀 그렇지 않다"부터 "매우 그렇다"까지의 직관적인 텍스트 레이블로 변경하고, 클릭하기 쉬운 카드 형태로 UI를 개선했습니다.
+    *   **Results Page:**
+        *   결과 페이지에서 처음으로 돌아갈 수 있는 "홈으로 돌아가기" 버튼을 추가했습니다.
+        *   결과를 공유할 수 있도록, 현재 URL을 클립보드에 복사하는 "결과 공유하기" 버튼과 시각적 피드백을 구현했습니다.
+        *   백엔드의 새로운 장르 기반 추천 API 응답 구조를 처리하도록 컴포넌트를 업데이트했습니다.
+
+*   **Backend & Recommendation Logic:**
+    *   **Expanded Archetypes:** 사용자 워크 스타일(클러스터)의 수를 기존 4개에서 8개로 확장하여, 더 다양하고 세분화된 프로필을 제공하도록 개선했습니다.
+    *   **Genre-Based Recommendations:**
+        *   추천 로직을 기존의 특정 게임 추천 방식에서, 각 워크 스타일에 연관된 장르를 기반으로 추천하는 방식으로 전면 개편했습니다.
+        *   백엔드는 이제 추천 장르와 일치하는 게임을 데이터베이스에서 조회하되, 인기 있는 게임을 우선적으로 추천하도록 로직을 개선했습니다.
+    *   **Popularity Feature:**
+        *   게임의 인기도를 구분하기 위해 `games` 테이블에 `is_popular` 플래그를 추가했습니다.
+        *   선별된 인기 게임 목록을 정의하고, 데이터 수집 스크립트(`ingest_games.py`)가 이 플래그를 설정하도록 수정했습니다.
+    *   **Content Localization:**
+        *   `deep-translator` 라이브러리를 도입하여, 데이터 수집 과정에서 게임 설명을 영어에서 한국어로 번역하도록 구현했습니다. 데이터베이스는 이제 한국어 설명을 저장하고 제공합니다.
+
+*   **Bug Fixing & Debugging:**
+    *   **422 Unprocessable Entity Error:** Pydantic 스키마(`UserResponseBase`, `UserResponseInput`)와 `main.py`의 엔드포인트 서명이 일치하지 않아 발생했던 지속적인 422 오류를 해결했습니다. 임시 예외 핸들러를 추가하여 상세한 유효성 검사 오류를 로깅하고 원인을 정확히 파악하여 수정했습니다.
+    *   **Missing Graph Error:** 결과 페이지에서 레이더 차트가 표시되지 않는 문제를 추적한 결과, 데이터베이스의 `centroid_values`가 비어있는 것이 원인이었습니다. 백엔드 스크립트(`train_model.py`, `update_cluster_info.py`)의 데이터 처리 파이프라인을 더 견고하게 만들고 클러스터 ID가 올바르게 처리되도록 하여 문제를 해결했습니다.
+    *   **Database & Dependency Issues:** 외래 키 제약 조건, `googletrans`와 `deep-translator` 간의 의존성 충돌, `is_popular` 컬럼 누락 등 다수의 백엔드 스크립트 오류를 해결했습니다.
